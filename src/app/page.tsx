@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Image from 'next/image';
 
 type AdventureStage = 'welcome' | 'age' | 'name' | 'drawingPrompt' | 'expandPrompt' | 'generating' | 'coloring' | 'save';
 
@@ -46,6 +47,8 @@ type FallingItem = {
   left: number; 
   color: string;
   type: 'pencil' | 'crayon';
+  rotationDirection: 1 | -1;
+  rotationAmount: number;
 };
 
 const FallingItems = () => {
@@ -57,7 +60,9 @@ const FallingItems = () => {
         id: Date.now(),
         left: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 400),
         color: `hsl(${Math.random() * 360}, 70%, 60%)`,
-        type: Math.random() > 0.5 ? 'pencil' : 'crayon'
+        type: Math.random() > 0.5 ? 'pencil' : 'crayon',
+        rotationDirection: Math.random() > 0.5 ? 1 : -1,
+        rotationAmount: Math.random() * 360
       };
       setItems((prevItems: FallingItem[]) => [...prevItems, newItem]);
     };
@@ -91,7 +96,9 @@ const FallingItems = () => {
           style={{
             left: `${item.left}px`,
             animationDuration: `${Math.random() * 5 + 3}s`,
-            transform: `rotate(${Math.random() * 360}deg)`
+            animation: `fall-full ${Math.random() * 5 + 3}s linear forwards, 
+                       spin${item.rotationDirection > 0 ? '' : 'Reverse'} ${Math.random() * 3 + 2}s linear infinite`,
+            transform: `rotate(${item.rotationAmount}deg)`
           }}
         >
           {item.type === 'pencil' ? (
@@ -104,7 +111,6 @@ const FallingItems = () => {
     </div>
   );
 };
-
 const DrawingBuddyAdventure = () => {
   const [stage, setStage] = useState<AdventureStage>('welcome');
   const [age, setAge] = useState<keyof typeof AgeComplexityMap>('5-6');
@@ -276,10 +282,12 @@ const DrawingBuddyAdventure = () => {
               </span>
             </p>
           </div>
-          <img 
+          <Image 
             src={generatedImage || ''} 
-            alt="Your drawing" 
-            className="mx-auto max-w-full rounded-xl"
+            alt="Your drawing"
+            width={400}
+            height={400} 
+            className="mx-auto rounded-xl"
           />
           <div className="flex justify-center space-x-4">
             <button 
@@ -326,9 +334,11 @@ const DrawingBuddyAdventure = () => {
           <div className="grid grid-cols-3 gap-4">
             {[generatedImage, generatedImage, generatedImage].map((img, index) => (
               <div key={index} className="relative">
-                <img 
-                  src={img || ''} 
+                <Image
+                  src={img || ''}
                   alt={`Artwork ${index + 1}`}
+                  width={400}
+                  height={400}
                   className="rounded-xl"
                 />
                 <button 
